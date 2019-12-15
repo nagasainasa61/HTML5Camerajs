@@ -35,7 +35,12 @@
                 // This call to "getUserMedia" initiates a PermissionRequest in the WebView.
                 navigator.getUserMedia({ video: true }, function (s) {
                     stream = s;
-                    video.src = window.URL.createObjectURL(stream);
+                    //video.src = window.URL.createObjectURL(stream);
+                    try {
+                        video.srcObject = stream;
+                    } catch (error) {
+                        video.src = window.URL.createObjectURL(stream);
+                    }
                     toggle.innerText = 'Stop';
                     console.log('Started');
                 }, function (error) {
