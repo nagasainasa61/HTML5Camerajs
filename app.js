@@ -1,29 +1,62 @@
-// Set constraints for the video stream
-var constraints = { video: { facingMode: "user" }, audio: false };
-// Define constants
-const cameraView = document.querySelector("#camera--view"),
-    cameraOutput = document.querySelector("#camera--output"),
-    cameraSensor = document.querySelector("#camera--sensor"),
-    cameraTrigger = document.querySelector("#camera--trigger")
-// Access the device camera and stream to cameraView
-function cameraStart() {
-    navigator.mediaDevices
-        .getUserMedia(constraints)
-        .then(function(stream) {
-        track = stream.getTracks()[0];
-        cameraView.srcObject = stream;
-    })
-    .catch(function(error) {
-        console.error("Oops. Something is broken.", error);
+/*
+ * Copyright (C) 2014 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+(function () {
+    "use strict";
+
+    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+    window.URL = window.URL || window.webkitURL;
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        var video = document.querySelector('#video'),
+            toggle = document.querySelector('#toggle'),
+            stream = null;
+
+        if (!navigator.getUserMedia) {
+            console.error('getUserMedia not supported');
+        }
+
+        toggle.addEventListener('click', function () {
+            if (null === stream) {
+                // This call to "getUserMedia" initiates a PermissionRequest in the WebView.
+                navigator.getUserMedia({ video: true }, function (s) {
+                    stream = s;
+                    video.src = window.URL.createObjectURL(stream);
+                    toggle.innerText = 'Stop';
+                    console.log('Started');
+                }, function (error) {
+                    console.error('Error starting camera. Denied.');
+                });
+            } else {
+                if (stream.getTracks) {
+                    stream.getTracks().forEach(function (track) {
+                        track.stop();
+                    });
+                } else if (stream.stop) {
+                    stream.stop();
+                }
+                stream = null;
+                toggle.innerText = 'Start';
+                console.log('Stopped');
+            }
+        });
+
+        console.log('Page loaded');
+
     });
-}
-// Take a picture when cameraTrigger is tapped
-cameraTrigger.onclick = function() {
-    cameraSensor.width = cameraView.videoWidth;
-    cameraSensor.height = cameraView.videoHeight;
-    cameraSensor.getContext("2d").drawImage(cameraView, 0, 0);
-    cameraOutput.src = cameraSensor.toDataURL("image/webp");
-    cameraOutput.classList.add("taken");
-};
-// Start the video stream when the window loads
-window.addEventListener("load", cameraStart, false);
+
+})();
