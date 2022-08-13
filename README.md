@@ -7,5 +7,5 @@ This is a Heading
 This is a paragraph
 
 
-[this](www.googlw.com) is link to google
+[this](www.google.com) is link to google
 
